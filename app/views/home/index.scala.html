@@ -1,0 +1,9 @@
+@()(implicit flash: Flash)
+
+@main("Welcome to Play") {
+  <h1>Welcome to Play!</h1>
+  <a href="@routes.EventController.index()">Show events</a><br/>
+  <a href="@routes.EventController.addEvent()">Add an event</a><br/>
+  <br/>
+  @flash.get("success").getOrElse("")
+}

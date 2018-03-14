@@ -1,0 +1,13 @@
+@(form: Form[forms.AddEventForm.Data])(implicit request: RequestHeader, messages: Messages)
+
+@main("Add an event") {
+  <h1>Add an event</h1>
+  @helper.form(action = routes.EventController.addEventPost()) {
+    @helper.CSRF.formField
+    @helper.inputText(form("title"))
+    @helper.inputText(form("description"))
+    @helper.inputDate(form("startsAt"))
+    @helper.inputDate(form("endsAt"))
+    <input type="submit" value="Add" />
+  }
+}
