@@ -1,0 +1,17 @@
+# Users schema
+
+# --- !Ups
+
+CREATE TABLE EVENT (
+    id bigint(20) NOT NULL AUTO_INCREMENT,
+    TITLE varchar(255) NOT NULL,
+    DESCRIPTION varchar(255) NOT NULL,
+    STARTS_AT TIMESTAMP NOT NULL,
+    ENDS_AT TIMESTAMP NULL,
+    CREATED_AT TIMESTAMP NULL,
+    PRIMARY KEY (id)
+);
+
+# --- !Downs
+
+DROP TABLE EVENT;

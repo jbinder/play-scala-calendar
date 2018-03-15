@@ -1,6 +1,11 @@
-@()(implicit request: RequestHeader, messages: Messages)
+@(events: Seq[Event])(implicit request: RequestHeader, messages: Messages)
 
 @main("All events") {
   <h1>All events</h1>
-  TODO:
+  <table>
+    <tr><th>Title</th><th>Description</th><th>Starts at</th><th>Ends at</th></tr>
+    @for(c <- events) {
+      <tr><td>@c.title</td><td>@c.description</td><td>@c.startsAt</td><td>@c.endsAt</td></tr>
+    }
+  </table>
 }
