@@ -1,9 +1,7 @@
 @()(implicit flash: Flash)
 
-@main("Welcome to Play") {
-  <h1>Welcome to Play!</h1>
-  <a href="@routes.EventController.index()">Show events</a><br/>
-  <a href="@routes.EventController.addEvent()">Add an event</a><br/>
+@main("Welcome to play-scala-calendar") {
+  <h1>Welcome to play-scala-calendar</h1>
   <br/>
   @flash.get("success").getOrElse("")
 }
