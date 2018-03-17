@@ -1,0 +1,11 @@
+@(locations: Seq[Location])(implicit request: RequestHeader, messages: Messages)
+
+@main("All locations") {
+  <h1>All locations</h1>
+  <table>
+    <tr><th>Title</th><th>Address</th><th>City</th><th>Zip Code</th><th>State</th><th>Country</th></tr>
+    @for(c <- locations) {
+      <tr><td>@c.title</td><td>@c.address</td><td>@c.city</td><td>@c.zipCode</td><td>@c.state</td><td>@c.country</td></tr>
+    }
+  </table>
+}
