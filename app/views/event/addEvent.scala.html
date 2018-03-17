@@ -1,3 +1,4 @@
+@import helpers.FormHelper.fields
 @(form: Form[forms.AddEventForm.Data])(implicit request: RequestHeader, messages: Messages)
 
 @main("Add an event") {
@@ -8,6 +9,6 @@
     @helper.inputText(form("description"))
     @helper.inputDate(form("startsAt"))
     @helper.inputDate(form("endsAt"))
-    <input type="submit" value="Add" />
+    <input type="submit" value="Add" class="btn btn-primary"/>
   }
 }

@@ -1,3 +1,4 @@
+@import helpers.FormHelper.fields
 @(form: Form[forms.AddLocationForm.Data])(implicit request: RequestHeader, messages: Messages)
 
 @main("Add a location") {
@@ -10,6 +11,6 @@
     @helper.inputText(form("zipCode"))
     @helper.inputText(form("state"))
     @helper.inputText(form("country"))
-    <input type="submit" value="Add" />
+    <input type="submit" value="Add" class="btn btn-primary"/>
   }
 }
