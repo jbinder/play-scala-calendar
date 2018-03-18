@@ -17,13 +17,16 @@ class LocationDAO @Inject() (protected val dbConfigProvider: DatabaseConfigProvi
 
   def insert(location: Location): Future[Unit] = db.run(Locations += location).map { _ => () }
 
+  def toOptionsList(locations: Seq[Location]): Seq[(String, String)] = locations.map(location => (location.id.get.toString, location.title))
+
   private class LocationTable(tag: Tag) extends Table[Location](tag, "LOCATION") {
-    def title = column[String]("TITLE", O.PrimaryKey)
+    def id = column[Option[Long]]("ID", O.PrimaryKey, O.AutoInc)
+    def title = column[String]("TITLE")
     def address = column[String]("ADDRESS")
     def city = column[String]("CITY")
     def zipCode = column[String]("ZIP_CODE")
     def state = column[String]("STATE")
     def country = column[String]("COUNTRY")
-    def * = (title, address, city, zipCode, state, country) <> (Location.tupled, Location.unapply)
+    def * = (id, title, address, city, zipCode, state, country) <> (Location.tupled, Location.unapply)
   }
 }

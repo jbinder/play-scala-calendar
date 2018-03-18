@@ -16,6 +16,7 @@ object AddEventForm {
       "description" -> nonEmptyText,
       "startsAt" -> date,
       "endsAt" -> date,
+      "locationId" -> longNumber,
     )(Data.apply)(Data.unapply)
   )
 
@@ -24,5 +25,6 @@ object AddEventForm {
     description: String,
     startsAt: Date,
     endsAt: Date,
+    locationId: Long,
   )
 }

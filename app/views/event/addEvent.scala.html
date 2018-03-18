@@ -1,5 +1,5 @@
 @import helpers.FormHelper.fields
-@(form: Form[forms.AddEventForm.Data])(implicit request: RequestHeader, messages: Messages)
+@(form: Form[forms.AddEventForm.Data], locationOptions: Seq[(String, String)])(implicit request: RequestHeader, messages: Messages)
 
 @main("Add an event") {
   <h1>Add an event</h1>
@@ -9,6 +9,7 @@
     @helper.inputText(form("description"))
     @helper.inputDate(form("startsAt"))
     @helper.inputDate(form("endsAt"))
+    @helper.select(form("locationId"), options = locationOptions)
     <input type="submit" value="Add" class="btn btn-primary"/>
   }
 }

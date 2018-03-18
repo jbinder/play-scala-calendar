@@ -32,7 +32,7 @@ class LocationController @Inject()(
         BadRequest(views.html.location.addLocation(formWithErrors))
       },
       locationData => {
-        locationDao.insert(Location(locationData.title, locationData.address, locationData.city, locationData.zipCode, locationData.state, locationData.country))
+        locationDao.insert(Location(None, locationData.title, locationData.address, locationData.city, locationData.zipCode, locationData.state, locationData.country))
         Redirect(routes.HomeController.index()).flashing("success" -> "Location added!")
       }
     )

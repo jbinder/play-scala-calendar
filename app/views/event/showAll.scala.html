@@ -3,9 +3,9 @@
 @main("All events") {
   <h1>All events</h1>
   <table>
-    <tr><th>Title</th><th>Description</th><th>Starts at</th><th>Ends at</th></tr>
+    <tr><th>Title</th><th>Description</th><th>Starts at</th><th>Ends at</th><th>Location</th></tr>
     @for(c <- events) {
-      <tr><td>@c.title</td><td>@c.description</td><td>@c.startsAt</td><td>@c.endsAt</td></tr>
+      <tr><td>@c.title</td><td>@c.description</td><td>@c.startsAt</td><td>@c.endsAt</td><th>@c.locationId</th></tr>
     }
   </table>
 }
