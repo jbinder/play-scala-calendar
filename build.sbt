@@ -22,6 +22,7 @@ libraryDependencies ++= Seq(
 )
 // ui
 libraryDependencies += "org.webjars" % "bootstrap" % "4.0.0-2"
+libraryDependencies += "org.webjars" % "datatables" % "1.10.16"
 
 
 // Adds additional packages into Twirl

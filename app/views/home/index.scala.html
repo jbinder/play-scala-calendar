@@ -1,6 +1,10 @@
 @()(implicit flash: Flash)
 
-@main("Welcome to play-scala-calendar") {
+@scripts = {
+  // noop
+}
+
+@main("Welcome to play-scala-calendar")(scripts) {
   <h1>Welcome to play-scala-calendar</h1>
   <br/>
   @flash.get("success").getOrElse("")

@@ -1,11 +1,19 @@
 @(events: Seq[Event])(implicit request: RequestHeader, messages: Messages)
 
-@main("All events") {
+@scripts = {
+  $('#events').DataTable();
+}
+
+@main("All events")(scripts) {
   <h1>All events</h1>
-  <table>
+  <table id="events">
+    <thead>
     <tr><th>Title</th><th>Description</th><th>Starts at</th><th>Ends at</th><th>Location</th></tr>
+    </thead>
+    <tbody>
     @for(c <- events) {
       <tr><td>@c.title</td><td>@c.description</td><td>@c.startsAt</td><td>@c.endsAt</td><th>@c.locationId</th></tr>
     }
+    </tbody>
   </table>
 }

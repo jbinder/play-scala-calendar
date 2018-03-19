@@ -1,7 +1,11 @@
 @import helpers.FormHelper.fields
 @(form: Form[forms.AddEventForm.Data], locationOptions: Seq[(String, String)])(implicit request: RequestHeader, messages: Messages)
 
-@main("Add an event") {
+@scripts = {
+  // noop
+}
+
+@main("Add an event")(scripts) {
   <h1>Add an event</h1>
   @helper.form(action = routes.EventController.addEventPost()) {
     @helper.CSRF.formField
