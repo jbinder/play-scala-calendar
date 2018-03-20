@@ -18,7 +18,7 @@
     </thead>
     <tbody>
     @for(c <- events) {
-      <tr><td>@c.title</td><td>@c.description</td><td>@c.startsAt.toString("dd.MM.yyyy HH:mm")</td><td>@duration(c.startsAt, c.endsAt)</td><th>@c.locationId</th></tr>
+      <tr><td><a href="@routes.EventController.viewEvent(c.id.get)">@c.title</a></td><td>@c.description</td><td>@c.startsAt.toString("dd.MM.yyyy HH:mm")</td><td>@duration(c.startsAt, c.endsAt)</td><th>@c.locationId</th></tr>
     }
     </tbody>
   </table>

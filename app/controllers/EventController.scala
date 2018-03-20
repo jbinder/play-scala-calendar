@@ -25,6 +25,10 @@ class EventController @Inject()(
     eventDao.all().map(events => Ok(views.html.event.showAll(events)))
   }
 
+  def viewEvent(id: Long): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    eventDao.get(id).map(event => Ok(views.html.event.viewEvent(event.get)))
+  }
+
   def addEvent(): Action[AnyContent] = Action.async { implicit request =>
     getAddEventView(AddEventForm.form).map(html => Ok(html))
   }

@@ -17,6 +17,8 @@ class EventDAO @Inject() (protected val dbConfigProvider: DatabaseConfigProvider
 
   def all(): Future[Seq[Event]] = db.run(Events.result)
 
+  def get(id: Long): Future[Option[Event]] = db.run(Events.filter(_.id === id).result.headOption)
+
   def insert(event: Event): Future[Unit] = db.run(Events += event).map { _ => () }
 
   private class EventsTable(tag: Tag) extends Table[Event](tag, "EVENT") {

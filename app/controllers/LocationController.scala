@@ -18,15 +18,19 @@ class LocationController @Inject()(
   cc: ControllerComponents,
 )(implicit executionContext: ExecutionContext) extends AbstractController(cc) with play.api.i18n.I18nSupport with HasDatabaseConfigProvider[JdbcProfile] {
 
-  def index() = Action.async { implicit request: Request[AnyContent] =>
+  def index(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     locationDao.all().map(locations => Ok(views.html.location.showAll(locations)))
   }
 
-  def addLocation() = Action { implicit request =>
+  def viewLocation(id: Long): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    locationDao.get(id).map(location => Ok(views.html.location.viewLocation(location.get)))
+  }
+
+  def addLocation(): Action[AnyContent] = Action { implicit request =>
     Ok(views.html.location.addLocation(AddLocationForm.form))
   }
 
-  def addLocationPost() = Action { implicit request: Request[AnyContent] =>
+  def addLocationPost(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     AddLocationForm.form.bindFromRequest.fold(
       formWithErrors => {
         BadRequest(views.html.location.addLocation(formWithErrors))

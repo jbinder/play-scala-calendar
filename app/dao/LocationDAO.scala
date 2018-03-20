@@ -15,6 +15,8 @@ class LocationDAO @Inject() (protected val dbConfigProvider: DatabaseConfigProvi
 
   def all(): Future[Seq[Location]] = db.run(Locations.result)
 
+  def get(id: Long): Future[Option[Location]] = db.run(Locations.filter(_.id === id).result.headOption)
+
   def insert(location: Location): Future[Unit] = db.run(Locations += location).map { _ => () }
 
   def toOptionsList(locations: Seq[Location]): Seq[(String, String)] = locations.map(location => (location.id.get.toString, location.title))

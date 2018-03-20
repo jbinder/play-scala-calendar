@@ -1,0 +1,13 @@
+@(event: Event)(implicit request: RequestHeader, messages: Messages)
+
+@scripts = {
+  // noop
+}
+
+@main(event.title)(scripts) {
+  <h1>@event.title</h1>
+  <p>@event.description</p>
+  <p>Start: @event.startsAt.toString("dd.MM.yyyy HH:mm")</p>
+  <p>End: @event.endsAt.toString("dd.MM.yyyy HH:mm")</p>
+  <p>Location: <a href="@routes.LocationController.viewLocation(event.locationId)">@event.locationId</a></p>
+}

@@ -12,7 +12,7 @@
     </thead>
     <tbody>
     @for(c <- locations) {
-      <tr><td>@c.title</td><td>@c.address</td><td>@c.city</td><td>@c.zipCode</td><td>@c.state</td><td>@c.country</td></tr>
+      <tr><td><a href="@routes.LocationController.viewLocation(c.id.get)">@c.title</a></td><td>@c.address</td><td>@c.city</td><td>@c.zipCode</td><td>@c.state</td><td>@c.country</td></tr>
     }
     </tbody>
   </table>
