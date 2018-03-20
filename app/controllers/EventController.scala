@@ -5,8 +5,10 @@ import dao.{EventDAO, LocationDAO}
 import forms.AddEventForm
 import models.Event
 import org.joda.time.DateTime
+import play.api.data.Form
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.api.mvc._
+import play.twirl.api.Html
 import slick.jdbc.JdbcProfile
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -19,23 +21,35 @@ class EventController @Inject()(
   cc: ControllerComponents,
 )(implicit executionContext: ExecutionContext) extends AbstractController(cc) with play.api.i18n.I18nSupport with HasDatabaseConfigProvider[JdbcProfile] {
 
-  def index() = Action.async { implicit request: Request[AnyContent] =>
+  def index(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     eventDao.all().map(events => Ok(views.html.event.showAll(events)))
   }
 
-  def addEvent() = Action.async { implicit request =>
-    locationDao.all().map(locations => Ok(views.html.event.addEvent(AddEventForm.form, locationDao.toOptionsList(locations))))
+  def addEvent(): Action[AnyContent] = Action.async { implicit request =>
+    getAddEventView(AddEventForm.form).map(html => Ok(html))
   }
 
-  def addEventPost() = Action.async { implicit request: Request[AnyContent] =>
+  def addEventPost(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     AddEventForm.form.bindFromRequest.fold(
       formWithErrors => {
-        locationDao.all().map(locations => BadRequest(views.html.event.addEvent(formWithErrors, locationDao.toOptionsList(locations))))
+        getAddEventView(formWithErrors).map(html => BadRequest(html))
       },
       eventData => {
-        eventDao.insert(Event(None, eventData.title, eventData.description, new DateTime(eventData.startsAt), new DateTime(eventData.endsAt), DateTime.now, eventData.locationId))
-        Future{Redirect(routes.HomeController.index()).flashing("success" -> "Event added!")}
+        val startDateTime = new DateTime(eventData.startsAtDate).plusHours(eventData.startsAtHour).plusMinutes(eventData.startsAtMinute)
+        val endDateTime = new DateTime(eventData.endsAtDate).plusHours(eventData.endsAtHour).plusMinutes(eventData.endsAtMinute)
+        eventDao.insert(Event(None, eventData.title, eventData.description, startDateTime, endDateTime, DateTime.now, eventData.locationId))
+        Future {
+          Redirect(routes.HomeController.index()).flashing("success" -> "Event added!")
+        }
       }
     )
+  }
+
+  private def getAddEventView(form: Form[AddEventForm.Data])(implicit request: Request[AnyContent]): Future[Html] = {
+    locationDao.all().map(locations => views.html.event.addEvent(form,
+      locationDao.toOptionsList(locations),
+      (0 to 23).map(x => (x.toString, x.toString)),
+      (0 to 59 by 15).map(x => (x.toString, x.toString))
+    ))
   }
 }

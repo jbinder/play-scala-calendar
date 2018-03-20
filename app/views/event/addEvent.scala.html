@@ -1,5 +1,5 @@
 @import helpers.FormHelper.fields
-@(form: Form[forms.AddEventForm.Data], locationOptions: Seq[(String, String)])(implicit request: RequestHeader, messages: Messages)
+@(form: Form[forms.AddEventForm.Data], locationOptions: Seq[(String, String)], hourOptions: Seq[(String, String)], minuteOptions: Seq[(String, String)])(implicit request: RequestHeader, messages: Messages)
 
 @scripts = {
   // noop
@@ -11,8 +11,28 @@
     @helper.CSRF.formField
     @helper.inputText(form("title"))
     @helper.inputText(form("description"))
-    @helper.inputDate(form("startsAt"))
-    @helper.inputDate(form("endsAt"))
+    <div class="form-row">
+      <div class="col">
+        @helper.inputDate(form("startsAtDate"))
+      </div>
+      <div class="col">
+        @helper.select(form("startsAtHour"), options = hourOptions)
+      </div>
+      <div class="col">
+        @helper.select(form("startsAtMinute"), options = minuteOptions)
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="col">
+        @helper.inputDate(form("endsAtDate"))
+      </div>
+      <div class="col">
+        @helper.select(form("endsAtHour"), options = hourOptions)
+      </div>
+      <div class="col">
+        @helper.select(form("endsAtMinute"), options = minuteOptions)
+      </div>
+    </div>
     @helper.select(form("locationId"), options = locationOptions)
     <input type="submit" value="Add" class="btn btn-primary"/>
   }
