@@ -1,6 +1,6 @@
 @import org.joda.time.DateTime
 @import org.joda.time.Minutes
-@(events: Seq[Event])(implicit request: RequestHeader, messages: Messages)
+@(data: Seq[(Event, Location)])(implicit request: RequestHeader, messages: Messages)
 
 @duration(startAt: DateTime, endsAt: DateTime) = @{
   Minutes.minutesBetween(startAt, endsAt).getMinutes
@@ -17,8 +17,8 @@
     <tr><th>Title</th><th>Description</th><th>Starts at</th><th>Duration</th><th>Location</th></tr>
     </thead>
     <tbody>
-    @for(c <- events) {
-      <tr><td><a href="@routes.EventController.viewEvent(c.id.get)">@c.title</a></td><td>@c.description</td><td>@c.startsAt.toString("dd.MM.yyyy HH:mm")</td><td>@duration(c.startsAt, c.endsAt)</td><th>@c.locationId</th></tr>
+    @for((e, l) <- data) {
+      <tr><td><a href="@routes.EventController.viewEvent(e.id.get)">@e.title</a></td><td>@e.description</td><td>@e.startsAt.toString("dd.MM.yyyy HH:mm")</td><td>@duration(e.startsAt, e.endsAt)</td><td><a href="@routes.LocationController.viewLocation(e.locationId)">@l.address, @l.country @l.zipCode @l.city</a></td></tr>
     }
     </tbody>
   </table>

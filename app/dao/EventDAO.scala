@@ -1,8 +1,7 @@
 package dao
 
 import javax.inject.Inject
-
-import models.Event
+import models.{Event, Location}
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
 import com.github.tototoshi.slick.H2JodaSupport._
@@ -10,14 +9,25 @@ import org.joda.time.DateTime
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class EventDAO @Inject() (protected val dbConfigProvider: DatabaseConfigProvider)(implicit executionContext: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
+class EventDAO @Inject() (protected val dbConfigProvider: DatabaseConfigProvider, protected  val locationDAO: LocationDAO)(implicit executionContext: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
   import profile.api._
 
   private val Events = TableQuery[EventsTable]
+  private val Locations = TableQuery[locationDAO.LocationTable]
 
-  def all(): Future[Seq[Event]] = db.run(Events.result)
+  def all(): Future[Seq[(Event, Location)]] = {
+    val q = for {
+      (event, location) <- Events.join(Locations).on(_.locationId === _.id)
+    } yield (event, location)
+    db.run(q.result)
+  }
 
-  def get(id: Long): Future[Option[Event]] = db.run(Events.filter(_.id === id).result.headOption)
+  def get(id: Long): Future[Option[(Event, Location)]] = {
+    val q = for {
+      (event, location) <- Events.filter(x => x.id === id).join(Locations).on(_.locationId === _.id)
+    } yield (event, location)
+    db.run(q.result.headOption)
+  }
 
   def insert(event: Event): Future[Unit] = db.run(Events += event).map { _ => () }
 

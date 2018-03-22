@@ -21,7 +21,7 @@ class LocationDAO @Inject() (protected val dbConfigProvider: DatabaseConfigProvi
 
   def toOptionsList(locations: Seq[Location]): Seq[(String, String)] = locations.map(location => (location.id.get.toString, location.title))
 
-  private class LocationTable(tag: Tag) extends Table[Location](tag, "LOCATION") {
+  class LocationTable(tag: Tag) extends Table[Location](tag, "LOCATION") {
     def id = column[Option[Long]]("ID", O.PrimaryKey, O.AutoInc)
     def title = column[String]("TITLE")
     def address = column[String]("ADDRESS")

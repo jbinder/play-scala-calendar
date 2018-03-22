@@ -22,11 +22,11 @@ class EventController @Inject()(
 )(implicit executionContext: ExecutionContext) extends AbstractController(cc) with play.api.i18n.I18nSupport with HasDatabaseConfigProvider[JdbcProfile] {
 
   def index(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
-    eventDao.all().map(events => Ok(views.html.event.showAll(events)))
+    eventDao.all().map(data => Ok(views.html.event.showAll(data)))
   }
 
   def viewEvent(id: Long): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
-    eventDao.get(id).map(event => Ok(views.html.event.viewEvent(event.get)))
+    eventDao.get(id).map(data => Ok(views.html.event.viewEvent(data.get)))
   }
 
   def addEvent(): Action[AnyContent] = Action.async { implicit request =>
