@@ -25,8 +25,8 @@ class EventController @Inject()(
     eventDao.all().map(data => Ok(views.html.event.showAll(data)))
   }
 
-  def viewEvent(id: Long): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
-    eventDao.get(id).map(data => Ok(views.html.event.viewEvent(data.get)))
+  def viewEvent(slug: String): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    eventDao.get(slug).map(data => Ok(views.html.event.viewEvent(data.get)))
   }
 
   def addEvent(): Action[AnyContent] = Action.async { implicit request =>
@@ -39,12 +39,8 @@ class EventController @Inject()(
         getAddEventView(formWithErrors).map(html => BadRequest(html))
       },
       eventData => {
-        val startDateTime = new DateTime(eventData.startsAtDate).plusHours(eventData.startsAtHour).plusMinutes(eventData.startsAtMinute)
-        val endDateTime = new DateTime(eventData.endsAtDate).plusHours(eventData.endsAtHour).plusMinutes(eventData.endsAtMinute)
-        eventDao.insert(Event(None, eventData.title, eventData.description, startDateTime, endDateTime, DateTime.now, eventData.locationId))
-        Future {
-          Redirect(routes.HomeController.index()).flashing("success" -> "Event added!")
-        }
+        eventDao.insert(eventData)
+        Future { Redirect(routes.HomeController.index()).flashing("success" -> "Event added!") }
       }
     )
   }

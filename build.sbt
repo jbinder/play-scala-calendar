@@ -23,7 +23,8 @@ libraryDependencies ++= Seq(
 // ui
 libraryDependencies += "org.webjars" % "bootstrap" % "4.0.0-2"
 libraryDependencies += "org.webjars" % "datatables" % "1.10.16"
-
+// helper
+libraryDependencies += "com.github.slugify" % "slugify" % "2.2"
 
 // Adds additional packages into Twirl
 //TwirlKeys.templateImports += "com.example.controllers._"

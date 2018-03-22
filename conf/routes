@@ -8,7 +8,7 @@ GET     /                           controllers.HomeController.index
 GET     /events/                    controllers.EventController.index
 GET     /events/add                 controllers.EventController.addEvent
 POST    /events/add_                controllers.EventController.addEventPost
-GET     /events/:id                 controllers.EventController.viewEvent(id: Long)
+GET     /events/:slug               controllers.EventController.viewEvent(slug: String)
 
 GET     /locations/                 controllers.LocationController.index
 GET     /locations/add              controllers.LocationController.addLocation
