@@ -40,19 +40,33 @@ class EventDAO @Inject() (protected val dbConfigProvider: DatabaseConfigProvider
   }
 
   def insert(eventData: AddEventForm.Data): Future[Unit] = {
-    val startDateTime = new DateTime(eventData.startsAtDate).plusHours(eventData.startsAtHour).plusMinutes(eventData.startsAtMinute)
-    val endDateTime = new DateTime(eventData.endsAtDate).plusHours(eventData.endsAtHour).plusMinutes(eventData.endsAtMinute)
-    buildSlug(eventData.title).map(slug =>
-    {
-      val event = Event(None, eventData.title, slug, eventData.description, startDateTime, endDateTime, DateTime.now, eventData.locationId)
+   prepareEvent(eventData, Option.empty).map(data => {
+      val event = Event(None, eventData.title, data._3, eventData.description, data._1, data._2, DateTime.now, eventData.locationId)
       db.run(Events += event).map { _ => () }
     })
   }
 
-  private def buildSlug(title: String): Future[String] = {
+  def update(slug: String, eventData: AddEventForm.Data): Future[Unit] = {
+    val query = Events.filter(_.slug === slug)
+    prepareEvent(eventData, Option(slug)).map(data => {
+      val update = query.result.head.flatMap {event =>
+        query.update(event.patch(Option(eventData.title), Option(data._3), Option(eventData.description), Option(data._1), Option(data._2), Option(eventData.locationId)))
+      }
+      db.run(update)
+    })
+  }
+
+  private def prepareEvent(eventData: AddEventForm.Data, slug: Option[String]): Future[(DateTime, DateTime, String)] = {
+    val startDateTime = new DateTime(eventData.startsAtDate).plusHours(eventData.startsAtHour).plusMinutes(eventData.startsAtMinute)
+    val endDateTime = new DateTime(eventData.endsAtDate).plusHours(eventData.endsAtHour).plusMinutes(eventData.endsAtMinute)
+    buildSlug(eventData.title, slug).map(slug => (startDateTime, endDateTime, slug))
+  }
+
+  private def buildSlug(title: String, slug: Option[String]): Future[String] = {
     val desiredSlug = slugify.slugify(title)
+    if (slug.isDefined && desiredSlug == slug.get) return Future{slug.get}
     db.run(Events.filter(x => x.slug.startsWith(desiredSlug)).result).map(events => {
-      val conflictingSlugs = events.map(event => event.slug)
+      val conflictingSlugs = events.map(event => event.slug).filter(s => slug.isEmpty || s != slug.get)
 
       def buildSlug: (String, Int) => String = (title, i) => slugify.slugify(title + (if (i > 0) " " + i else ""))
 

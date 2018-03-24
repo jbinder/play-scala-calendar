@@ -1,13 +1,16 @@
 @import helpers.FormHelper.fields
-@(form: Form[forms.AddEventForm.Data], locationOptions: Seq[(String, String)], hourOptions: Seq[(String, String)], minuteOptions: Seq[(String, String)])(implicit request: RequestHeader, messages: Messages)
+@(form: Form[forms.AddEventForm.Data], locationOptions: Seq[(String, String)], hourOptions: Seq[(String, String)], minuteOptions: Seq[(String, String)], slug: Option[String])(implicit request: RequestHeader, messages: Messages)
+
+@title = @{if (slug.isDefined) "Edit event" else "Add an event"}
+@post = @{if (slug.isDefined) routes.EventController.editEventPost(slug.get) else routes.EventController.addEventPost()}
 
 @scripts = {
   // noop
 }
 
-@main("Add an event")(scripts) {
-  <h1>Add an event</h1>
-  @helper.form(action = routes.EventController.addEventPost()) {
+@main(title)(scripts) {
+  <h1>@title</h1>
+  @helper.form(action = post) {
     @helper.CSRF.formField
     @helper.inputText(form("title"))
     @helper.inputText(form("description"))
@@ -34,6 +37,6 @@
       </div>
     </div>
     @helper.select(form("locationId"), options = locationOptions)
-    <input type="submit" value="Add" class="btn btn-primary"/>
+    <input type="submit" value="@{if (slug.isDefined) "Update" else "Add"}" class="btn btn-primary"/>
   }
 }

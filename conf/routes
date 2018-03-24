@@ -8,6 +8,8 @@ GET     /                           controllers.HomeController.index
 GET     /events/                    controllers.EventController.index
 GET     /events/add                 controllers.EventController.addEvent
 POST    /events/add_                controllers.EventController.addEventPost
+GET     /events/edit/:slug          controllers.EventController.editEvent(slug: String)
+POST    /events/edit_/:slug         controllers.EventController.editEventPost(slug: String)
 GET     /events/:slug               controllers.EventController.viewEvent(slug: String)
 
 GET     /locations/                 controllers.LocationController.index

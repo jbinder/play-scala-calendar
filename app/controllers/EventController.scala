@@ -1,10 +1,8 @@
 package controllers
 
-import javax.inject._
 import dao.{EventDAO, LocationDAO}
 import forms.AddEventForm
-import models.Event
-import org.joda.time.DateTime
+import javax.inject._
 import play.api.data.Form
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.api.mvc._
@@ -30,13 +28,13 @@ class EventController @Inject()(
   }
 
   def addEvent(): Action[AnyContent] = Action.async { implicit request =>
-    getAddEventView(AddEventForm.form).map(html => Ok(html))
+    getAddEventView(AddEventForm.form, Option.empty).map(html => Ok(html))
   }
 
   def addEventPost(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     AddEventForm.form.bindFromRequest.fold(
       formWithErrors => {
-        getAddEventView(formWithErrors).map(html => BadRequest(html))
+        getAddEventView(formWithErrors, Option.empty).map(html => BadRequest(html))
       },
       eventData => {
         eventDao.insert(eventData)
@@ -45,11 +43,41 @@ class EventController @Inject()(
     )
   }
 
-  private def getAddEventView(form: Form[AddEventForm.Data])(implicit request: Request[AnyContent]): Future[Html] = {
+  def editEvent(slug: String): Action[AnyContent] = Action.async { implicit request =>
+    eventDao.get(slug).map(data => {
+      val event = data.get._1
+      getAddEventView(AddEventForm.form.fill(AddEventForm.Data(
+        event.title,
+        event.description,
+        event.startsAt.toDate,
+        event.startsAt.hourOfDay().get(),
+        event.startsAt.minuteOfHour().get(),
+        event.endsAt.toDate,
+        event.endsAt.hourOfDay().get(),
+        event.endsAt.minuteOfHour().get(),
+        event.locationId
+      )), Option(slug)).map(html => Ok(html))
+    }).flatten
+  }
+
+  def editEventPost(slug: String): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    AddEventForm.form.bindFromRequest.fold(
+      formWithErrors => {
+        getAddEventView(formWithErrors, Option(slug)).map(html => BadRequest(html))
+      },
+      eventData => {
+        eventDao.update(slug, eventData)
+        Future { Redirect(routes.HomeController.index()).flashing("success" -> "Event updated!") }
+      }
+    )
+  }
+
+  private def getAddEventView(form: Form[AddEventForm.Data], slug: Option[String])(implicit request: Request[AnyContent]): Future[Html] = {
     locationDao.all().map(locations => views.html.event.addEvent(form,
       locationDao.toOptionsList(locations),
       (0 to 23).map(x => (x.toString, x.toString)),
-      (0 to 59 by 15).map(x => (x.toString, x.toString))
+      (0 to 59 by 15).map(x => (x.toString, x.toString)),
+      slug
     ))
   }
 }

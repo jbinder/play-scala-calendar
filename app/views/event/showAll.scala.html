@@ -18,7 +18,7 @@
     </thead>
     <tbody>
     @for((e, l) <- data) {
-      <tr><td><a href="@routes.EventController.viewEvent(e.slug)">@e.title</a></td><td>@e.description</td><td>@e.startsAt.toString("dd.MM.yyyy HH:mm")</td><td>@duration(e.startsAt, e.endsAt)</td><td><a href="@routes.LocationController.viewLocation(e.locationId)">@l.address, @l.country @l.zipCode @l.city</a></td></tr>
+      <tr><td><a href="@routes.EventController.viewEvent(e.slug)">@e.title</a></td><td>@e.description</td><td>@e.startsAt.toString("dd.MM.yyyy HH:mm")</td><td>@duration(e.startsAt, e.endsAt)</td><td><a href="@routes.LocationController.viewLocation(e.locationId)">@l.address, @l.country @l.zipCode @l.city</a></td><td><a href="@routes.EventController.editEvent(e.slug)">Edit</a></td></tr>
     }
     </tbody>
   </table>
