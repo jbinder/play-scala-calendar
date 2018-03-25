@@ -2,7 +2,7 @@
 @(form: Form[forms.AddEventForm.Data], locationOptions: Seq[(String, String)], hourOptions: Seq[(String, String)], minuteOptions: Seq[(String, String)], slug: Option[String])(implicit request: RequestHeader, messages: Messages)
 
 @title = @{if (slug.isDefined) "Edit event" else "Add an event"}
-@post = @{if (slug.isDefined) routes.EventController.editEventPost(slug.get) else routes.EventController.addEventPost()}
+@action = @{if (slug.isDefined) routes.EventController.editEventPost(slug.get) else routes.EventController.addEventPost()}
 
 @scripts = {
   // noop
@@ -10,7 +10,7 @@
 
 @main(title)(scripts) {
   <h1>@title</h1>
-  @helper.form(action = post) {
+  @helper.form(action = action) {
     @helper.CSRF.formField
     @helper.inputText(form("title"))
     @helper.inputText(form("description"))

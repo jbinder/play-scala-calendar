@@ -1,7 +1,7 @@
 package dao
 
+import forms.AddLocationForm
 import javax.inject.Inject
-
 import models.Location
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
@@ -18,6 +18,14 @@ class LocationDAO @Inject() (protected val dbConfigProvider: DatabaseConfigProvi
   def get(id: Long): Future[Option[Location]] = db.run(Locations.filter(_.id === id).result.headOption)
 
   def insert(location: Location): Future[Unit] = db.run(Locations += location).map { _ => () }
+
+  def update(id: Long, locationData: AddLocationForm.Data): Future[Int] = {
+    val query = Locations.filter(_.id === id)
+    val update = query.result.head.flatMap {location =>
+      query.update(location.patch(Option(locationData.title), Option(locationData.address), Option(locationData.city), Option(locationData.zipCode), Option(locationData.state), Option(locationData.country)))
+    }
+    db.run(update)
+  }
 
   def toOptionsList(locations: Seq[Location]): Seq[(String, String)] = locations.map(location => (location.id.get.toString, location.title))
 

@@ -27,17 +27,36 @@ class LocationController @Inject()(
   }
 
   def addLocation(): Action[AnyContent] = Action { implicit request =>
-    Ok(views.html.location.addLocation(AddLocationForm.form))
+    Ok(views.html.location.addLocation(AddLocationForm.form, Option.empty))
   }
 
   def addLocationPost(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     AddLocationForm.form.bindFromRequest.fold(
       formWithErrors => {
-        BadRequest(views.html.location.addLocation(formWithErrors))
+        BadRequest(views.html.location.addLocation(formWithErrors, Option.empty))
       },
       locationData => {
         locationDao.insert(Location(None, locationData.title, locationData.address, locationData.city, locationData.zipCode, locationData.state, locationData.country))
         Redirect(routes.HomeController.index()).flashing("success" -> "Location added!")
+      }
+    )
+  }
+
+  def editLocation(id: Long): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    locationDao.get(id).map(data => {
+      val location = data.get
+      views.html.location.addLocation(AddLocationForm.form.fill(AddLocationForm.Data(location.title, location.address, location.city, location.zipCode, location.state, location.country)), Option(id))
+    }).map(html => Ok(html))
+  }
+
+  def editLocationPost(id: Long): Action[AnyContent] = Action { implicit reqquest: Request[AnyContent] =>
+    AddLocationForm.form.bindFromRequest.fold(
+       formWithErrors => {
+        BadRequest(views.html.location.addLocation(formWithErrors, Option(id)))
+      },
+      locationData => {
+        locationDao.update(id, locationData)
+        Redirect(routes.HomeController.index()).flashing("success" -> "Location edited!")
       }
     )
   }

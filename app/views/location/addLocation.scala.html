@@ -1,13 +1,16 @@
 @import helpers.FormHelper.fields
-@(form: Form[forms.AddLocationForm.Data])(implicit request: RequestHeader, messages: Messages)
+@(form: Form[forms.AddLocationForm.Data], id: Option[Long])(implicit request: RequestHeader, messages: Messages)
+
+@title = @{if (id.isDefined) "Edit location" else "Add a location"}
+@action = @{if (id.isDefined) routes.LocationController.editLocationPost(id.get) else routes.LocationController.addLocationPost()}
 
 @scripts = {
   // noop
 }
 
-@main("Add a location")(scripts) {
-  <h1>Add a location</h1>
-  @helper.form(action = routes.LocationController.addLocationPost()) {
+@main(title)(scripts) {
+  <h1>@title</h1>
+  @helper.form(action = action) {
     @helper.CSRF.formField
     @helper.inputText(form("title"))
     @helper.inputText(form("address"))
