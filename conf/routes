@@ -11,6 +11,7 @@ POST    /events/add_                controllers.EventController.addEventPost
 GET     /events/edit/:slug          controllers.EventController.editEvent(slug: String)
 POST    /events/edit_/:slug         controllers.EventController.editEventPost(slug: String)
 GET     /events/:slug               controllers.EventController.viewEvent(slug: String)
+GET     /events/delete/:slug        controllers.EventController.deleteEvent(slug: String)
 
 GET     /locations/                 controllers.LocationController.index
 GET     /locations/add              controllers.LocationController.addLocation
@@ -18,6 +19,7 @@ POST    /locations/add_             controllers.LocationController.addLocationPo
 GET     /locations/edit/:id         controllers.LocationController.editLocation(id: Long)
 GET     /locations/edit_/:id        controllers.LocationController.editLocationPost(id: Long)
 GET     /locations/:id              controllers.LocationController.viewLocation(id: Long)
+GET     /locations/delete/:id       controllers.LocationController.deleteLocation(id: Long)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

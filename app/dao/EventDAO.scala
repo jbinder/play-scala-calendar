@@ -56,6 +56,14 @@ class EventDAO @Inject() (protected val dbConfigProvider: DatabaseConfigProvider
     })
   }
 
+  def delete(slug: String): Unit = {
+    db.run(Events.filter(_.slug === slug).delete)
+  }
+
+  def isLocationInUse(locationId: Long): Future[Boolean] = {
+    db.run(Events.filter(_.locationId === locationId).exists.result)
+  }
+
   private def prepareEvent(eventData: AddEventForm.Data, slug: Option[String]): Future[(DateTime, DateTime, String)] = {
     val startDateTime = new DateTime(eventData.startsAtDate).plusHours(eventData.startsAtHour).plusMinutes(eventData.startsAtMinute)
     val endDateTime = new DateTime(eventData.endsAtDate).plusHours(eventData.endsAtHour).plusMinutes(eventData.endsAtMinute)

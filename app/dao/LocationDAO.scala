@@ -27,6 +27,10 @@ class LocationDAO @Inject() (protected val dbConfigProvider: DatabaseConfigProvi
     db.run(update)
   }
 
+  def delete(id: Long): Future[Int] = {
+    db.run(Locations.filter(_.id === id).delete)
+  }
+
   def toOptionsList(locations: Seq[Location]): Seq[(String, String)] = locations.map(location => (location.id.get.toString, location.title))
 
   class LocationTable(tag: Tag) extends Table[Location](tag, "LOCATION") {

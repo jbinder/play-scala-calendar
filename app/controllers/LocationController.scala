@@ -1,8 +1,7 @@
 package controllers
 
 import javax.inject._
-
-import dao.LocationDAO
+import dao.{EventDAO, LocationDAO}
 import forms.AddLocationForm
 import models.Location
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
@@ -15,6 +14,7 @@ import scala.concurrent.ExecutionContext
 class LocationController @Inject()(
   protected val dbConfigProvider: DatabaseConfigProvider,
   locationDao: LocationDAO,
+  eventDao: EventDAO,
   cc: ControllerComponents,
 )(implicit executionContext: ExecutionContext) extends AbstractController(cc) with play.api.i18n.I18nSupport with HasDatabaseConfigProvider[JdbcProfile] {
 
@@ -49,7 +49,7 @@ class LocationController @Inject()(
     }).map(html => Ok(html))
   }
 
-  def editLocationPost(id: Long): Action[AnyContent] = Action { implicit reqquest: Request[AnyContent] =>
+  def editLocationPost(id: Long): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     AddLocationForm.form.bindFromRequest.fold(
        formWithErrors => {
         BadRequest(views.html.location.addLocation(formWithErrors, Option(id)))
@@ -59,5 +59,16 @@ class LocationController @Inject()(
         Redirect(routes.HomeController.index()).flashing("success" -> "Location edited!")
       }
     )
+  }
+
+  def deleteLocation(id: Long): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    eventDao.isLocationInUse(id).map(isInUse => {
+      if (!isInUse) {
+        locationDao.delete(id)
+        Redirect(routes.HomeController.index()).flashing("success" -> "Location deleted!")
+      } else {
+        Redirect(routes.HomeController.index()).flashing("error" -> "Unable to delete location.")
+      }
+    })
   }
 }

@@ -72,6 +72,11 @@ class EventController @Inject()(
     )
   }
 
+  def deleteEvent(slug: String): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
+    eventDao.delete(slug)
+    Future { Redirect(routes.HomeController.index()).flashing("success" -> "Event deleted!") }
+  }
+
   private def getAddEventView(form: Form[AddEventForm.Data], slug: Option[String])(implicit request: Request[AnyContent]): Future[Html] = {
     locationDao.all().map(locations => views.html.event.addEvent(form,
       locationDao.toOptionsList(locations),
