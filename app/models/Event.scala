@@ -1,6 +1,6 @@
 package models
 
-import org.joda.time.DateTime
+import org.joda.time.{DateTime, Minutes}
 
 case class Event(id: Option[Long], title: String, slug: String, description: String, startsAt: DateTime, endsAt: DateTime, createdAt: DateTime, locationId: Long) {
   def patch(title: Option[String], slug: Option[String], description: Option[String], startsAt: Option[DateTime], endsAt: Option[DateTime], locationId: Option[Long]): Event = {
@@ -12,4 +12,6 @@ case class Event(id: Option[Long], title: String, slug: String, description: Str
       locationId = locationId.getOrElse(this.locationId)
     )
   }
+
+  def getDurationInMinutes(): Int = { Minutes.minutesBetween(startsAt, endsAt).getMinutes }
 }

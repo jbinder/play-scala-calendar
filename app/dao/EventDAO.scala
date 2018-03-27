@@ -25,18 +25,23 @@ class EventDAO @Inject() (protected val dbConfigProvider: DatabaseConfigProvider
   }
 
   def get(id: Long): Future[Option[(Event, Location)]] = {
-    getEvent(Events.filter(x => x.id === id))
+    getEvents(Events.filter(event => event.id === id)).map(events => events.headOption)
   }
 
   def get(slug: String): Future[Option[(Event, Location)]] = {
-    getEvent(Events.filter(x => x.slug === slug))
+    getEvents(Events.filter(event => event.slug === slug)).map(events => events.headOption)
   }
 
-  private def getEvent(event: Query[EventsTable, Event, Seq]) = {
+  def getUpcoming(numDays: Int, offset: Option[Int] = Option.empty): Future[Seq[(Event, Location)]] = {
+    val now = DateTime.now()
+    getEvents(Events.filter(event => event.startsAt > now.plusDays(offset.getOrElse(0)) && event.startsAt < now.plusDays(numDays + offset.getOrElse(0))))
+  }
+
+  private def getEvents(event: Query[EventsTable, Event, Seq]): Future[Seq[(Event, Location)]] = {
     val q = for {
       (event, location) <- event.join(Locations).on(_.locationId === _.id)
     } yield (event, location)
-    db.run(q.result.headOption)
+    db.run(q.result)
   }
 
   def insert(eventData: AddEventForm.Data): Future[Unit] = {

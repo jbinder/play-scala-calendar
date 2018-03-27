@@ -1,4 +1,8 @@
-@()(implicit flash: Flash)
+@(upcoming: Seq[(Event, Location)], later: Seq[(Event, Location)])(implicit flash: Flash)
+
+@showEvent(e: Event, l: Location, upcoming: Boolean) = {
+  <p>@e.startsAt.dayOfWeek().getAsText() @e.startsAt.toString(if(upcoming) "dd.MM HH:mm" else "dd.MM.yyyy HH:mm") <a href="@routes.EventController.viewEvent(e.slug)">@e.title</a> (@e.getDurationInMinutes() minutes) in @l.city</p>
+}
 
 @scripts = {
   // noop
@@ -6,7 +10,33 @@
 
 @main("Welcome to play-scala-calendar")(scripts) {
   <h1>Welcome to play-scala-calendar</h1>
-  <br/>
-  @flash.get("success").getOrElse("")
-  @flash.get("error").getOrElse("")
+  <hr/>
+  <h2>Upcoming</h2>
+  @for((e, l) <- upcoming) { @showEvent(e, l, true) }
+  @if(upcoming.isEmpty) {
+    Nothing's going on.
+  }
+  <h2>Later</h2>
+  @for((e, l) <- later) { @showEvent(e, l, false) }
+  @if(later.isEmpty) {
+    Nothing's going on.
+  }
+  @if(flash.get("success").isDefined) {
+    <br/>
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <strong>Success!</strong> @flash.get("success").
+    </div>
+  }
+  @if(flash.get("error").isDefined) {
+    <br/>
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <strong>Ups!</strong> @flash.get("error").
+    </div>
+  }
 }
