@@ -21,6 +21,7 @@ object AddEventForm {
       "endsAtHour" -> number(min = 0, max = 23),
       "endsAtMinute" -> number(min = 0, max = 59),
       "locationId" -> longNumber,
+      "tags" -> text,
     )(Data.apply)(Data.unapply)
   )
 
@@ -34,5 +35,6 @@ object AddEventForm {
     endsAtHour: Int,
     endsAtMinute: Int,
     locationId: Long,
+    tags: String,
   )
 }

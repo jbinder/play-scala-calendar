@@ -37,6 +37,7 @@
       </div>
     </div>
     @helper.select(form("locationId"), options = locationOptions)
+    @helper.inputText(form("tags"))
     <input type="submit" value="@{if (slug.isDefined) "Update" else "Add"}" class="btn btn-primary"/>
   }
 }
