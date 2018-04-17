@@ -1,13 +1,13 @@
 package dao
 
 import com.github.slugify.Slugify
-import javax.inject.Inject
-import models.{Event, EventTag, Location}
-import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
-import slick.jdbc.JdbcProfile
 import com.github.tototoshi.slick.H2JodaSupport._
 import forms.AddEventForm
+import javax.inject.Inject
+import models.{Event, EventTag, Location}
 import org.joda.time.DateTime
+import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
+import slick.jdbc.JdbcProfile
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -53,8 +53,8 @@ class EventDAO @Inject() (
       row.map { r => {
         val event = r._1
         val location = r._2
-        db.run((for {(_, tag) <- EventsTags.filter(eventTag => eventTag.eventId === event.id).join(Tags).on(_.tagId === _.id)} yield tag).result).map { (row) =>
-          (event, location, row)
+        db.run((for {(_, tag) <- EventsTags.filter(eventTag => eventTag.eventId === event.id).join(Tags).on(_.tagId === _.id)} yield tag).result).map { (tags) =>
+          (event, location, tags)
         }
       }}
     }.map((x) => Future.sequence(x)).flatten
@@ -63,7 +63,7 @@ class EventDAO @Inject() (
   def insert(eventData: AddEventForm.Data): Future[Unit] = {
     prepareEvent(eventData, Option.empty).map(data => {
       val event = Event(None, eventData.title, data._3, eventData.description, data._1, data._2, DateTime.now, eventData.locationId)
-      val tagNames = eventData.tags.split("(;|\\s)")
+      val tagNames = getTags(eventData.tags)
       // TODO: transaction!
       val tagIds = tagNames.map(tag => tagDAO.insert(tag))
       db.run(Events.returning(Events.map(_.id)) += event).map(id => {
@@ -73,22 +73,66 @@ class EventDAO @Inject() (
   }
 
   def update(slug: String, eventData: AddEventForm.Data): Future[Unit] = {
-    val query = Events.filter(_.slug === slug)
     prepareEvent(eventData, Option(slug)).map(data => {
-      val update = query.result.head.flatMap {event =>
-        query.update(event.patch(Option(eventData.title), Option(data._3), Option(eventData.description), Option(data._1), Option(data._2), Option(eventData.locationId)))
-        // TODO: tags
-      }
-      db.run(update)
+      val tagNames = getTags(eventData.tags)
+      val tagIds = tagNames.map(tag => tagDAO.insert(tag))
+
+      val eventQuery = Events.filter(_.slug === slug)
+      val existingTagsQuery = for {
+        event <- eventQuery
+        eventTag <- EventsTags.filter(_.eventId === event.id)
+        tag <- Tags.filter(_.id === eventTag.tagId)
+      } yield tag
+
+      // TODO: transaction!
+      db.run(existingTagsQuery.result).map((existingTags) => {
+        Future.sequence(tagIds).map((tagIds) => {
+          // dissociate obsolete tags
+          db.run(eventQuery.result).map(events => {
+            db.run(existingTagsQuery.filter(!_.id.inSet(tagIds)).result).map(tags => {
+              val obsoleteTags = for {
+                eventTag <- EventsTags.filter(eventTag => eventTag.eventId === events.head.id.get && eventTag.tagId.inSet(tags.map(_.id.get)))
+              } yield eventTag
+              db.run(obsoleteTags.delete)
+            })
+          })
+
+          // associate new tags
+          val newTags = for {
+            event <- eventQuery
+            tag <- Tags.filter(_.id.inSet(tagIds)).filterNot(_.id.inSet(existingTags.map(_.id.get)))
+          } yield (event, tag)
+          db.run(newTags.result).map((data) => {
+            data.map(eventTag => {
+              val event = eventTag._1
+              val tag = eventTag._2
+              db.run(EventsTags += EventTag(event.id.get, tag.id.get))
+            })
+          })
+
+          // update event
+          val update = eventQuery
+            .map(e => (e.title, e.slug, e.description, e.startsAt, e.endsAt, e.locationId))
+            .update((eventData.title, data._3, eventData.description, data._1, data._2, eventData.locationId))
+          db.run(update)
+        })
+      })
     })
   }
 
   def delete(slug: String): Unit = {
-    db.run(Events.filter(_.slug === slug).delete)
+    db.run(Events.filter(_.slug === slug).result).map(events => {
+      db.run(EventsTags.filter(_.eventId === events.head.id.get).delete)
+      db.run(Events.filter(_.slug === slug).delete)
+    })
   }
 
   def isLocationInUse(locationId: Long): Future[Boolean] = {
     db.run(Events.filter(_.locationId === locationId).exists.result)
+  }
+
+  private def getTags(text: String): Seq[String] = {
+    text.split("(;|,|\\s)").filter(tag => !tag.isEmpty)
   }
 
   private def prepareEvent(eventData: AddEventForm.Data, slug: Option[String]): Future[(DateTime, DateTime, String)] = {

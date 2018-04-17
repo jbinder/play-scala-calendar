@@ -19,7 +19,7 @@ class TagDAO @Inject() (protected val dbConfigProvider: DatabaseConfigProvider)(
     val normalizedName = normalizeName(name)
     get(normalizedName).flatMap(tag => {
       if (tag.isEmpty) {
-        db.run(Tags.returning(Tags.map(_.id)).into((item, id) => item.copy(id)) += models.Tag(None, normalizedName)).map(_ => tag.get.id.get)
+        db.run(Tags.returning(Tags.map(_.id)) += models.Tag(None, normalizedName)).map(id => id.get)
       } else {
         Future { tag.get.id.get }
       }

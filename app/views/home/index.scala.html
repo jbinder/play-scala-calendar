@@ -27,7 +27,7 @@
       <button type="button" class="close" data-dismiss="alert" aria-label="Close">
         <span aria-hidden="true">&times;</span>
       </button>
-      <strong>Success!</strong> @flash.get("success").
+      <strong>Success!</strong> @flash.get("success")
     </div>
   }
   @if(flash.get("error").isDefined) {
@@ -36,7 +36,7 @@
       <button type="button" class="close" data-dismiss="alert" aria-label="Close">
         <span aria-hidden="true">&times;</span>
       </button>
-      <strong>Ups!</strong> @flash.get("error").
+      <strong>Ups!</strong> @flash.get("error")
     </div>
   }
 }

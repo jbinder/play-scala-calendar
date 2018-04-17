@@ -56,7 +56,7 @@ class EventController @Inject()(
         event.endsAt.hourOfDay().get(),
         event.endsAt.minuteOfHour().get(),
         event.locationId,
-        "TODO: get tags"
+        data.get._3.map(tag => tag.name).mkString(", ")
       )), Option(slug)).map(html => Ok(html))
     }).flatten
   }
