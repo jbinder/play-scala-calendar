@@ -1,4 +1,4 @@
-# Location schema
+# Tag schema
 
 # --- !Ups
 

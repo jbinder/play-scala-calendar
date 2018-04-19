@@ -1,7 +1,7 @@
 @(upcoming: Seq[(Event, Location, Seq[models.Tag])], later: Seq[(Event, Location, Seq[models.Tag])])(implicit flash: Flash)
 
 @showEvent(e: Event, l: Location, upcoming: Boolean) = {
-  <p>@e.startsAt.dayOfWeek().getAsText() @e.startsAt.toString(if(upcoming) "dd.MM HH:mm" else "dd.MM.yyyy HH:mm") <a href="@routes.EventController.viewEvent(e.slug)">@e.title</a> (@e.getDurationInMinutes() minutes) in @l.city</p>
+  <p><a href="@routes.EventController.viewEvent(e.slug)">@e.title</a> in @l.city</p>
 }
 
 @scripts = {

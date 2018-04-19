@@ -49,12 +49,6 @@ class EventController @Inject()(
       getAddEventView(AddEventForm.form.fill(AddEventForm.Data(
         event.title,
         event.description,
-        event.startsAt.toDate,
-        event.startsAt.hourOfDay().get(),
-        event.startsAt.minuteOfHour().get(),
-        event.endsAt.toDate,
-        event.endsAt.hourOfDay().get(),
-        event.endsAt.minuteOfHour().get(),
         event.locationId,
         data.get._3.map(tag => tag.name).mkString(", ")
       )), Option(slug)).map(html => Ok(html))

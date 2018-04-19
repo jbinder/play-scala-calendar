@@ -41,8 +41,7 @@ class EventDAO @Inject() (
   }
 
   def getUpcoming(numDays: Int, offset: Option[Int] = Option.empty): Future[Seq[(Event, Location, Seq[models.Tag])]] = {
-    val now = DateTime.now()
-    getEvents(Events.filter(event => event.startsAt > now.plusDays(offset.getOrElse(0)) && event.startsAt < now.plusDays(numDays + offset.getOrElse(0))))
+    getEvents(Events) // TODO: filter for upcoming
   }
 
   private def getEvents(event: Query[EventsTable, Event, Seq]): Future[Seq[(Event, Location, Seq[models.Tag])]] = {
@@ -61,8 +60,8 @@ class EventDAO @Inject() (
   }
 
   def insert(eventData: AddEventForm.Data): Future[Unit] = {
-    prepareEvent(eventData, Option.empty).map(data => {
-      val event = Event(None, eventData.title, data._3, eventData.description, data._1, data._2, DateTime.now, eventData.locationId)
+    prepareEvent(eventData, Option.empty).map(slug => {
+      val event = Event(None, eventData.title, slug, eventData.description, DateTime.now, eventData.locationId)
       val tagNames = getTags(eventData.tags)
       // TODO: transaction!
       val tagIds = tagNames.map(tag => tagDAO.insert(tag))
@@ -73,7 +72,7 @@ class EventDAO @Inject() (
   }
 
   def update(slug: String, eventData: AddEventForm.Data): Future[Unit] = {
-    prepareEvent(eventData, Option(slug)).map(data => {
+    prepareEvent(eventData, Option(slug)).map(slug => {
       val tagNames = getTags(eventData.tags)
       val tagIds = tagNames.map(tag => tagDAO.insert(tag))
 
@@ -112,8 +111,8 @@ class EventDAO @Inject() (
 
           // update event
           val update = eventQuery
-            .map(e => (e.title, e.slug, e.description, e.startsAt, e.endsAt, e.locationId))
-            .update((eventData.title, data._3, eventData.description, data._1, data._2, eventData.locationId))
+            .map(e => (e.title, e.slug, e.description, e.locationId))
+            .update((eventData.title, slug, eventData.description, eventData.locationId))
           db.run(update)
         })
       })
@@ -135,10 +134,8 @@ class EventDAO @Inject() (
     text.split("(;|,|\\s)").filter(tag => !tag.isEmpty)
   }
 
-  private def prepareEvent(eventData: AddEventForm.Data, slug: Option[String]): Future[(DateTime, DateTime, String)] = {
-    val startDateTime = new DateTime(eventData.startsAtDate).plusHours(eventData.startsAtHour).plusMinutes(eventData.startsAtMinute)
-    val endDateTime = new DateTime(eventData.endsAtDate).plusHours(eventData.endsAtHour).plusMinutes(eventData.endsAtMinute)
-    buildSlug(eventData.title, slug).map(slug => (startDateTime, endDateTime, slug))
+  private def prepareEvent(eventData: AddEventForm.Data, slug: Option[String]): Future[String] = {
+    buildSlug(eventData.title, slug)
   }
 
   private def buildSlug(title: String, slug: Option[String]): Future[String] = {
@@ -167,11 +164,9 @@ class EventDAO @Inject() (
     def title = column[String]("TITLE")
     def slug = column[String]("SLUG")
     def description = column[String]("DESCRIPTION")
-    def startsAt = column[DateTime]("STARTS_AT")
-    def endsAt = column[DateTime]("ENDS_AT")
     def createdAt = column[DateTime]("CREATED_AT")
     def locationId = column[Long]("LOCATION_ID")
-    def * = (id, title, slug, description, startsAt, endsAt, createdAt, locationId) <> (Event.tupled, Event.unapply)
+    def * = (id, title, slug, description, createdAt, locationId) <> (Event.tupled, Event.unapply)
   }
 
   private class EventsTagsTable(tag: Tag) extends Table[EventTag](tag, "EVENT_TAG") {

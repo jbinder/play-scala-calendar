@@ -8,11 +8,11 @@
   <h1>All events</h1>
   <table id="events">
     <thead>
-    <tr><th>Title</th><th>Description</th><th>Starts at</th><th>Duration</th><th>Location</th><th></th></tr>
+    <tr><th>Title</th><th>Description</th><th>Location</th><th></th></tr>
     </thead>
     <tbody>
     @for((e, l) <- data) {
-      <tr><td><a href="@routes.EventController.viewEvent(e.slug)">@e.title</a></td><td>@e.description</td><td>@e.startsAt.toString("dd.MM.yyyy HH:mm")</td><td>@e.getDurationInMinutes()</td><td><a href="@routes.LocationController.viewLocation(e.locationId)">@l.address, @l.country @l.zipCode @l.city</a></td><td><a href="@routes.EventController.editEvent(e.slug)">Edit</a> <a href="@routes.EventController.deleteEvent(e.slug)">Delete</a></td></tr>
+      <tr><td><a href="@routes.EventController.viewEvent(e.slug)">@e.title</a></td><td>@e.description</td><td><td><a href="@routes.LocationController.viewLocation(e.locationId)">@l.address, @l.country @l.zipCode @l.city</a></td><td><a href="@routes.EventController.editEvent(e.slug)">Edit</a> <a href="@routes.EventController.deleteEvent(e.slug)">Delete</a></td></tr>
     }
     </tbody>
   </table>

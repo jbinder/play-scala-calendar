@@ -14,28 +14,6 @@
     @helper.CSRF.formField
     @helper.inputText(form("title"))
     @helper.inputText(form("description"))
-    <div class="form-row">
-      <div class="col">
-        @helper.inputDate(form("startsAtDate"))
-      </div>
-      <div class="col">
-        @helper.select(form("startsAtHour"), options = hourOptions)
-      </div>
-      <div class="col">
-        @helper.select(form("startsAtMinute"), options = minuteOptions)
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="col">
-        @helper.inputDate(form("endsAtDate"))
-      </div>
-      <div class="col">
-        @helper.select(form("endsAtHour"), options = hourOptions)
-      </div>
-      <div class="col">
-        @helper.select(form("endsAtMinute"), options = minuteOptions)
-      </div>
-    </div>
     @helper.select(form("locationId"), options = locationOptions)
     @helper.inputText(form("tags"))
     <input type="submit" value="@{if (slug.isDefined) "Update" else "Add"}" class="btn btn-primary"/>
