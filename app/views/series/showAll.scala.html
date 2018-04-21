@@ -1,0 +1,19 @@
+@(series: Seq[Series])(implicit request: RequestHeader, messages: Messages)
+
+@scripts = {
+  $('#locations').DataTable();
+}
+
+@main("All series")(scripts) {
+  <h1>All series</h1>
+  <table id="series">
+    <thead>
+    <tr><th>Id</th><th>Starts at</th><th></th></tr>
+    </thead>
+    <tbody>
+    @for(s <- series) {
+      <tr><td><a href="@routes.SeriesController.viewSeries(s.id.get)">@s.startsAt</a></td><td><a href="@routes.SeriesController.editSeries(s.id.get)">Edit</a> <a href="@routes.SeriesController.deleteSeries(s.id.get)">Delete</a></td></tr>
+    }
+    </tbody>
+  </table>
+}

@@ -130,6 +130,8 @@ class EventDAO @Inject() (
     db.run(Events.filter(_.locationId === locationId).exists.result)
   }
 
+  def toOptionsList(events: Seq[Event]): Seq[(String, String)] = events.map(event => (event.id.get.toString, event.title))
+
   private def getTags(text: String): Seq[String] = {
     text.split("(;|,|\\s)").filter(tag => !tag.isEmpty)
   }

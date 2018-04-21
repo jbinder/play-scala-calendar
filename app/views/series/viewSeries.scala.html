@@ -1,0 +1,12 @@
+@(series: Series)(implicit request: RequestHeader, messages: Messages)
+
+@scripts = {
+  // noop
+}
+
+@main("Series: " + series.id)(scripts) {
+  <h1>Series: @series.id</h1>
+  <p>@series.startsAt - @series.endsAt</p>
+  <p>@series.duration</p>
+  <p>@series.freq, @series.byDay, @series.interval</p>
+}

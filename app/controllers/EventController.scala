@@ -75,8 +75,6 @@ class EventController @Inject()(
   private def getAddEventView(form: Form[AddEventForm.Data], slug: Option[String])(implicit request: Request[AnyContent]): Future[Html] = {
     locationDao.all().map(locations => views.html.event.addEvent(form,
       locationDao.toOptionsList(locations),
-      (0 to 23).map(x => (x.toString, x.toString)),
-      (0 to 59 by 15).map(x => (x.toString, x.toString)),
       slug
     ))
   }

@@ -46,6 +46,13 @@
             </div>
           </li>
           <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" href="/" id="dropdown03" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Series</a>
+            <div class="dropdown-menu" aria-labelledby="dropdown03">
+              <a class="dropdown-item" href="@routes.SeriesController.addSeries()">Add</a>
+              <a class="dropdown-item" href="@routes.SeriesController.index()">Show</a>
+            </div>
+          </li>
+          <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="/" id="dropdown02" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Locations</a>
             <div class="dropdown-menu" aria-labelledby="dropdown02">
               <a class="dropdown-item" href="@routes.LocationController.addLocation()">Add</a>

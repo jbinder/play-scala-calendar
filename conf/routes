@@ -21,5 +21,13 @@ GET     /locations/edit_/:id        controllers.LocationController.editLocationP
 GET     /locations/:id              controllers.LocationController.viewLocation(id: Long)
 GET     /locations/delete/:id       controllers.LocationController.deleteLocation(id: Long)
 
+GET     /series/                    controllers.SeriesController.index
+GET     /series/add                 controllers.SeriesController.addSeries
+POST    /series/add_                controllers.SeriesController.addSeriesPost
+GET     /series/edit/:id            controllers.SeriesController.editSeries(id: Long)
+GET     /series/edit_/:id           controllers.SeriesController.editSeriesPost(id: Long)
+GET     /series/:id                 controllers.SeriesController.viewSeries(id: Long)
+GET     /series/delete/:id          controllers.SeriesController.deleteSeries(id: Long)
+
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

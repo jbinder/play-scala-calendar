@@ -1,0 +1,36 @@
+@import helpers.FormHelper.fields
+@(form: Form[forms.AddSeriesForm.Data], eventOptions: Seq[(String, String)], hourOptions: Seq[(String, String)], minuteOptions: Seq[(String, String)], id: Option[Long])(implicit request: RequestHeader, messages: Messages)
+
+@title = @{if (id.isDefined) "Edit series" else "Add a series"}
+@action = @{if (id.isDefined) routes.SeriesController.editSeriesPost(id.get) else routes.SeriesController.addSeriesPost()}
+
+@scripts = {
+  // noop
+}
+
+@main(title)(scripts) {
+  <h1>@title</h1>
+  @helper.form(action = action) {
+    @helper.CSRF.formField
+    @helper.inputText(form("duration"))
+    <div class="form-row">
+      <div class="col">
+        @helper.inputDate(form("startsAtDate"))
+      </div>
+      <div class="col">
+        @helper.select(form("startsAtHour"), options = hourOptions)
+      </div>
+      <div class="col">
+        @helper.select(form("startsAtMinute"), options = minuteOptions)
+      </div>
+      <div class="col">
+        @helper.inputDate(form("endsAtDate"))
+      </div>
+    </div>
+    @helper.inputText(form("freq"))
+    @helper.inputText(form("byDay"))
+    @helper.inputText(form("interval"))
+    @helper.select(form("eventId"), options = eventOptions)
+    <input type="submit" value="@{if (id.isDefined) "Update" else "Add"}" class="btn btn-primary"/>
+  }
+}
