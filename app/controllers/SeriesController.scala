@@ -3,6 +3,7 @@ package controllers
 import dao.{EventDAO, SeriesDAO}
 import forms.AddSeriesForm
 import javax.inject._
+import models.Freq
 import play.api.data.Form
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.api.mvc._
@@ -81,6 +82,7 @@ class SeriesController @Inject()(
       eventDao.toOptionsList(events.map(_._1)),
       (0 to 23).map(x => (x.toString, x.toString)),
       (0 to 59 by 15).map(x => (x.toString, x.toString)),
+      Freq.values.map(x => (x.id.toString, x.toString)).toSeq,
       id
     ))
   }

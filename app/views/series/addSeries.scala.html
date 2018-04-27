@@ -1,5 +1,5 @@
 @import helpers.FormHelper.fields
-@(form: Form[forms.AddSeriesForm.Data], eventOptions: Seq[(String, String)], hourOptions: Seq[(String, String)], minuteOptions: Seq[(String, String)], id: Option[Long])(implicit request: RequestHeader, messages: Messages)
+@(form: Form[forms.AddSeriesForm.Data], eventOptions: Seq[(String, String)], hourOptions: Seq[(String, String)], minuteOptions: Seq[(String, String)], freqOptions: Seq[(String, String)], id: Option[Long])(implicit request: RequestHeader, messages: Messages)
 
 @title = @{if (id.isDefined) "Edit series" else "Add a series"}
 @action = @{if (id.isDefined) routes.SeriesController.editSeriesPost(id.get) else routes.SeriesController.addSeriesPost()}
@@ -27,7 +27,7 @@
         @helper.inputDate(form("endsAtDate"))
       </div>
     </div>
-    @helper.inputText(form("freq"))
+    @helper.select(form("freq"), options = freqOptions)
     @helper.inputText(form("byDay"))
     @helper.inputText(form("interval"))
     @helper.select(form("eventId"), options = eventOptions)
