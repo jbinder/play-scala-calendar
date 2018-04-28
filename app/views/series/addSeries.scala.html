@@ -1,5 +1,5 @@
 @import helpers.FormHelper.fields
-@(form: Form[forms.AddSeriesForm.Data], eventOptions: Seq[(String, String)], hourOptions: Seq[(String, String)], minuteOptions: Seq[(String, String)], freqOptions: Seq[(String, String)], id: Option[Long])(implicit request: RequestHeader, messages: Messages)
+@(form: Form[forms.AddSeriesForm.Data], eventOptions: Seq[(String, String)], hourOptions: Seq[(String, String)], minuteOptions: Seq[(String, String)], freqOptions: Seq[(String, String)], dayOptions: Seq[(String, String)], id: Option[Long])(implicit request: RequestHeader, messages: Messages)
 
 @title = @{if (id.isDefined) "Edit series" else "Add a series"}
 @action = @{if (id.isDefined) routes.SeriesController.editSeriesPost(id.get) else routes.SeriesController.addSeriesPost()}
@@ -28,7 +28,7 @@
       </div>
     </div>
     @helper.select(form("freq"), options = freqOptions)
-    @helper.inputText(form("byDay"))
+    @helper.inputCheckboxGroup(form("byDay"), options = dayOptions)
     @helper.inputText(form("interval"))
     @helper.select(form("eventId"), options = eventOptions)
     <input type="submit" value="@{if (id.isDefined) "Update" else "Add"}" class="btn btn-primary"/>

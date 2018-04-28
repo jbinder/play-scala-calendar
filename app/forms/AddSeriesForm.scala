@@ -15,7 +15,7 @@ object AddSeriesForm {
       "startsAtMinute" -> number(min = 0, max = 59),
       "endsAtDate" -> optional(date),
       "freq" -> number,
-      "byDay" -> text,
+      "byDay" -> seq(text),
       "interval" -> number,
       "eventId" -> longNumber,
     )(Data.apply)(Data.unapply)
@@ -28,7 +28,7 @@ object AddSeriesForm {
     startsAtMinute: Int,
     endsAtDate: Option[Date],
     freq: Int,
-    byDay: String,
+    byDay: Seq[String],
     interval: Int,
     eventId: Long,
   )

@@ -23,7 +23,7 @@ class SeriesDAO @Inject() (
   def get(id: Long): Future[Option[Series]] = db.run(Series.filter(_.id === id).result.headOption)
 
   def insert(seriesData: AddSeriesForm.Data): Future[Unit] = {
-    val series = models.Series(None, seriesData.duration, getStartDateFromInput(seriesData), getEndDateFromInput(seriesData), seriesData.freq, seriesData.byDay, seriesData.interval, DateTime.now, seriesData.eventId)
+    val series = models.Series(None, seriesData.duration, getStartDateFromInput(seriesData), getEndDateFromInput(seriesData), seriesData.freq, seriesData.byDay.mkString(","), seriesData.interval, DateTime.now, seriesData.eventId)
     db.run(Series += series).map { _ => () }
   }
 
@@ -31,7 +31,7 @@ class SeriesDAO @Inject() (
     val query = Series.filter(_.id === id)
     val update = query
       .map(e => (e.duration, e.startsAt, e.endsAt, e.freq, e.byDay, e.interval, e.eventId))
-      .update((seriesData.duration, getStartDateFromInput(seriesData), getEndDateFromInput(seriesData), seriesData.freq, seriesData.byDay, seriesData.interval, seriesData.eventId))
+      .update((seriesData.duration, getStartDateFromInput(seriesData), getEndDateFromInput(seriesData), seriesData.freq, seriesData.byDay.mkString(","), seriesData.interval, seriesData.eventId))
     db.run(update)
   }
 
