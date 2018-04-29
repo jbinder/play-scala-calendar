@@ -29,7 +29,7 @@
     </div>
     @helper.select(form("freq"), options = freqOptions)
     @helper.inputCheckboxGroup(form("byDay"), options = dayOptions)
-    @helper.inputText(form("interval"))
+    @helper.inputText(form("interval"), 'placeholder -> "1")
     @helper.select(form("eventId"), options = eventOptions)
     <input type="submit" value="@{if (id.isDefined) "Update" else "Add"}" class="btn btn-primary"/>
   }

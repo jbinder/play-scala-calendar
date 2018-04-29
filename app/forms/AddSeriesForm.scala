@@ -16,7 +16,7 @@ object AddSeriesForm {
       "endsAtDate" -> optional(date),
       "freq" -> number,
       "byDay" -> seq(text),
-      "interval" -> number,
+      "interval" -> default(number, 1),
       "eventId" -> longNumber,
     )(Data.apply)(Data.unapply)
   )
