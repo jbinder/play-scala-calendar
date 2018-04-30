@@ -4,6 +4,7 @@ import dao.{EventDAO, SeriesDAO}
 import forms.AddSeriesForm
 import javax.inject._
 import models.{Day, Freq}
+import org.joda.time.DateTime
 import play.api.data.Form
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import play.api.mvc._
@@ -29,7 +30,9 @@ class SeriesController @Inject()(
   }
 
   def addSeries(): Action[AnyContent] = Action.async { implicit request =>
-    getAddSeriesView(AddSeriesForm.form, Option.empty).map(html => Ok(html))
+    getAddSeriesView(AddSeriesForm.form.fill(AddSeriesForm.Data(
+      60, DateTime.now().toDate, DateTime.now().hourOfDay().get(), 0, DateTime.now.plusMonths(6).toDate, Freq.Weekly.id, Seq.empty[String], 1, 0l)
+    ), Option.empty).map(html => Ok(html))
   }
 
   def addSeriesPost(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
@@ -52,7 +55,7 @@ class SeriesController @Inject()(
         series.startsAt.toDate,
         series.startsAt.hourOfDay().get(),
         series.startsAt.minuteOfHour().get(),
-        series.endsAt.map(_.toDate),
+        series.endsAt.toDate,
         series.freq,
         series.byDay.split(","),
         series.interval,

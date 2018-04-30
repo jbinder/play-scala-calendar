@@ -36,7 +36,7 @@ class SeriesDAO @Inject() (
   }
 
   private def getEndDateFromInput(seriesData: AddSeriesForm.Data) = {
-    seriesData.endsAtDate.map(dateTime => new DateTime(dateTime))
+    new DateTime(seriesData.endsAtDate)
   }
 
   private def getStartDateFromInput(seriesData: AddSeriesForm.Data) = {
@@ -51,7 +51,7 @@ class SeriesDAO @Inject() (
     def id = column[Option[Long]]("ID", O.PrimaryKey, O.AutoInc)
     def duration = column[Int]("DURATION")
     def startsAt = column[DateTime]("STARTS_AT")
-    def endsAt = column[Option[DateTime]]("ENDS_AT")
+    def endsAt = column[DateTime]("ENDS_AT")
     def freq = column[Int]("FREQ")
     def byDay = column[String]("BY_DAY")
     def interval = column[Int]("INTERVAL")
