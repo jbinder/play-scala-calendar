@@ -11,7 +11,8 @@ import slick.jdbc.JdbcProfile
 import scala.concurrent.{ExecutionContext, Future}
 
 class SeriesDAO @Inject() (
-  protected val dbConfigProvider: DatabaseConfigProvider)
+  protected val dbConfigProvider: DatabaseConfigProvider,
+  protected val occurrenceDAO: OccurrenceDAO)
   (implicit executionContext: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
 
   import profile.api._
@@ -24,7 +25,9 @@ class SeriesDAO @Inject() (
 
   def insert(seriesData: AddSeriesForm.Data): Future[Unit] = {
     val series = models.Series(None, seriesData.duration, getStartDateFromInput(seriesData), getEndDateFromInput(seriesData), seriesData.freq, seriesData.byDay.mkString(","), seriesData.interval, DateTime.now, seriesData.eventId)
-    db.run(Series += series).map { _ => () }
+    db.run(Series.returning(Series.map(_.id.get)) into ((series, id) => series.copy(id=Some(id))) += series).map { series =>
+      occurrenceDAO.insertAll(series)
+    }
   }
 
   def update(id: Long, seriesData: AddSeriesForm.Data): Future[Int] = {
@@ -33,6 +36,7 @@ class SeriesDAO @Inject() (
       .map(e => (e.duration, e.startsAt, e.endsAt, e.freq, e.byDay, e.interval, e.eventId))
       .update((seriesData.duration, getStartDateFromInput(seriesData), getEndDateFromInput(seriesData), seriesData.freq, seriesData.byDay.mkString(","), seriesData.interval, seriesData.eventId))
     db.run(update)
+    // TODO: update occurrences
   }
 
   private def getEndDateFromInput(seriesData: AddSeriesForm.Data) = {
@@ -45,6 +49,7 @@ class SeriesDAO @Inject() (
 
   def delete(id: Long): Future[Int] = {
     db.run(Series.filter(_.id === id).delete)
+    // TODO: delete occurrences
   }
 
   private class SeriesTable(tag: Tag) extends Table[Series](tag, "SERIES") {

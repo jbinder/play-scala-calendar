@@ -3,6 +3,8 @@ play-scala-calendar
 
 A simple calender using Scala/Play/Slick.
 
+Work in progress!
+
 Requirements
 ------------
 
