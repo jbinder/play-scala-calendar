@@ -21,6 +21,12 @@ class OccurrenceDAO @Inject() (
 
   def get(id: Long): Future[Option[Occurrence]] = db.run(Occurrences.filter(_.id === id).result.headOption)
 
+  def getUpcoming(numDays: Int, offset: Option[Int] = Option.empty): Future[Seq[Occurrence]] = {
+    val from = DateTime.now().plusDays(offset.getOrElse(0))
+    val to = from.plusDays(numDays)
+    db.run(Occurrences.filter(occurrence => occurrence.date >= from && occurrence.date < to).result)
+  }
+
   def insert(occurrence: Occurrence): Future[Unit] = {
     db.run(Occurrences += occurrence).map { _ => () }
   }

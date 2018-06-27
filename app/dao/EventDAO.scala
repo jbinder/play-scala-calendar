@@ -4,7 +4,7 @@ import com.github.slugify.Slugify
 import com.github.tototoshi.slick.H2JodaSupport._
 import forms.AddEventForm
 import javax.inject.Inject
-import models.{Event, EventTag, Location}
+import models.{Event, EventTag, Location, Occurrence}
 import org.joda.time.DateTime
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
@@ -15,6 +15,7 @@ class EventDAO @Inject() (
   protected val dbConfigProvider: DatabaseConfigProvider,
   protected val locationDAO: LocationDAO,
   protected val tagDAO: TagDAO,
+  protected val seriesDAO: SeriesDAO,
   protected val slugify: Slugify)
   (implicit executionContext: ExecutionContext) extends HasDatabaseConfigProvider[JdbcProfile] {
 
@@ -40,23 +41,25 @@ class EventDAO @Inject() (
     getEvents(Events.filter(event => event.slug === slug)).map(events => events.headOption)
   }
 
-  def getUpcoming(numDays: Int, offset: Option[Int] = Option.empty): Future[Seq[(Event, Location, Seq[models.Tag])]] = {
-    getEvents(Events) // TODO: filter for upcoming
+  def getByOccurrences(occurrences: Seq[Occurrence]): Future[Seq[(Occurrence, Option[(Event, Location, Seq[models.Tag])])]] = {
+    Future.sequence(occurrences.map(o => {
+      seriesDAO.get(o.seriesId).flatMap(s => get(s.get.eventId).map(e => (o, e)))
+    }))
   }
 
   private def getEvents(event: Query[EventsTable, Event, Seq]): Future[Seq[(Event, Location, Seq[models.Tag])]] = {
     val q = for {
       (event, location) <- event.join(Locations).on(_.locationId === _.id)
     } yield (event, location)
-    db.run(q.result).map { (row) =>
+    db.run(q.result).map { row =>
       row.map { r => {
         val event = r._1
         val location = r._2
-        db.run((for {(_, tag) <- EventsTags.filter(eventTag => eventTag.eventId === event.id).join(Tags).on(_.tagId === _.id)} yield tag).result).map { (tags) =>
+        db.run((for {(_, tag) <- EventsTags.filter(eventTag => eventTag.eventId === event.id).join(Tags).on(_.tagId === _.id)} yield tag).result).map { tags =>
           (event, location, tags)
         }
       }}
-    }.map((x) => Future.sequence(x)).flatten
+    }.map(x => Future.sequence(x)).flatten
   }
 
   def insert(eventData: AddEventForm.Data): Future[Unit] = {
@@ -66,7 +69,7 @@ class EventDAO @Inject() (
       // TODO: transaction!
       val tagIds = tagNames.map(tag => tagDAO.insert(tag))
       db.run(Events.returning(Events.map(_.id)) += event).map(id => {
-        tagIds.map((tags) => tags.map(tagId => db.run(EventsTags += EventTag(id.get, tagId))))
+        tagIds.map(tags => tags.map(tagId => db.run(EventsTags += EventTag(id.get, tagId))))
       })
     })
   }
@@ -84,8 +87,8 @@ class EventDAO @Inject() (
       } yield tag
 
       // TODO: transaction!
-      db.run(existingTagsQuery.result).map((existingTags) => {
-        Future.sequence(tagIds).map((tagIds) => {
+      db.run(existingTagsQuery.result).map(existingTags => {
+        Future.sequence(tagIds).map(tagIds => {
           // dissociate obsolete tags
           db.run(eventQuery.result).map(events => {
             db.run(existingTagsQuery.filter(!_.id.inSet(tagIds)).result).map(tags => {
@@ -101,7 +104,7 @@ class EventDAO @Inject() (
             event <- eventQuery
             tag <- Tags.filter(_.id.inSet(tagIds)).filterNot(_.id.inSet(existingTags.map(_.id.get)))
           } yield (event, tag)
-          db.run(newTags.result).map((data) => {
+          db.run(newTags.result).map(data => {
             data.map(eventTag => {
               val event = eventTag._1
               val tag = eventTag._2

@@ -1,7 +1,7 @@
-@(upcoming: Seq[(Event, Location, Seq[models.Tag])], later: Seq[(Event, Location, Seq[models.Tag])])(implicit flash: Flash)
+@(upcoming: Seq[(Occurrence, Option[(Event, Location, Seq[models.Tag])])], later: Seq[(Occurrence, Option[(Event, Location, Seq[models.Tag])])])(implicit flash: Flash)
 
-@showEvent(e: Event, l: Location, upcoming: Boolean) = {
-  <p><a href="@routes.EventController.viewEvent(e.slug)">@e.title</a> in @l.city</p>
+@showEvent(occurrence: Occurrence, event: Event, location: Location) = {
+  <p>@occurrence.date.dayOfWeek().getAsText() @occurrence.date.toString(if(upcoming) "dd.MM HH:mm" else "dd.MM.yyyy HH:mm") <a href="@routes.EventController.viewEvent(event.slug)">@event.title</a> in @location.city</p>
 }
 
 @scripts = {
@@ -12,12 +12,12 @@
   <h1>Welcome to play-scala-calendar</h1>
   <hr/>
   <h2>Upcoming</h2>
-  @for((e, l, t) <- upcoming) { @showEvent(e, l, true) }
+  @for(x <- upcoming) { @showEvent(x._1, x._2.get._1, x._2.get._2) }
   @if(upcoming.isEmpty) {
     Nothing's going on.
   }
   <h2>Later</h2>
-  @for((e, l, t) <- later) { @showEvent(e, l, false) }
+  @for(x <- later) { @showEvent(x._1, x._2.get._1, x._2.get._2) }
   @if(later.isEmpty) {
     Nothing's going on.
   }

@@ -23,6 +23,8 @@ class SeriesDAO @Inject() (
 
   def get(id: Long): Future[Option[Series]] = db.run(Series.filter(_.id === id).result.headOption)
 
+  def get(ids: Seq[Long]): Future[Seq[Series]] = db.run(Series.filter(_.id.inSet(ids)).result)
+
   def insert(seriesData: AddSeriesForm.Data): Future[Unit] = {
     val series = models.Series(None, seriesData.duration, getStartDateFromInput(seriesData), getEndDateFromInput(seriesData), seriesData.freq, seriesData.byDay.mkString(","), seriesData.interval, DateTime.now, seriesData.eventId)
     db.run(Series.returning(Series.map(_.id.get)) into ((series, id) => series.copy(id=Some(id))) += series).map { series =>

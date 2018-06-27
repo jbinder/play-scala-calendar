@@ -1,6 +1,6 @@
 package controllers
 
-import dao.EventDAO
+import dao.{EventDAO, OccurrenceDAO}
 import javax.inject._
 import play.api.mvc._
 
@@ -11,7 +11,11 @@ import scala.concurrent.ExecutionContext
  * application's home page.
  */
 @Singleton
-class HomeController @Inject()(eventDao: EventDAO, cc: ControllerComponents)(implicit executionContext: ExecutionContext) extends AbstractController(cc) {
+class HomeController @Inject()(
+  eventDao: EventDAO,
+  occurrenceDao: OccurrenceDAO,
+  cc: ControllerComponents
+)(implicit executionContext: ExecutionContext) extends AbstractController(cc) {
 
   /**
    * Create an Action to render an HTML page.
@@ -20,10 +24,12 @@ class HomeController @Inject()(eventDao: EventDAO, cc: ControllerComponents)(imp
    * will be called when the application receives a `GET` request with
    * a path of `/`.
    */
-  def index() = Action.async { implicit request: Request[AnyContent] =>
+  def index(): Action[AnyContent] = Action.async { implicit request: Request[AnyContent] =>
     val data = for {
-      upcoming <- eventDao.getUpcoming(7)
-      later <- eventDao.getUpcoming(365, Option(7))
+      upcomingOccurrences <- occurrenceDao.getUpcoming(7)
+      upcoming <- eventDao.getByOccurrences(upcomingOccurrences)
+      laterOccurrences <- occurrenceDao.getUpcoming(30, Option(7))
+      later <- eventDao.getByOccurrences(laterOccurrences)
     } yield (upcoming, later)
     data.map(data => Ok(views.html.home.index(data._1, data._2)))
   }
