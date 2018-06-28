@@ -59,6 +59,10 @@ class OccurrenceDAO @Inject() (
     db.run(Occurrences.filter(_.id === id).delete)
   }
 
+  def deleteAll(seriesId: Long): Future[Int] = {
+    db.run(Occurrences.filter(_.seriesId === seriesId).delete)
+  }
+
   private class OccurrencesTable(tag: Tag) extends Table[Occurrence](tag, "OCCURRENCE") {
     def id = column[Option[Long]]("ID", O.PrimaryKey, O.AutoInc)
     def seriesId = column[Long]("SERIES_ID")

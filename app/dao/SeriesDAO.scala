@@ -3,7 +3,7 @@ package dao
 import com.github.tototoshi.slick.H2JodaSupport._
 import forms.AddSeriesForm
 import javax.inject.Inject
-import models.Series
+import models.{Occurrence, Series}
 import org.joda.time.DateTime
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
@@ -49,9 +49,12 @@ class SeriesDAO @Inject() (
     new DateTime(seriesData.startsAtDate).plusHours(seriesData.startsAtHour).plusMinutes(seriesData.startsAtMinute)
   }
 
-  def delete(id: Long): Future[Int] = {
-    db.run(Series.filter(_.id === id).delete)
-    // TODO: delete occurrences
+  def delete(id: Long): Future[Unit] = {
+    // TODO: transaction
+    for {
+      _ <- occurrenceDAO.deleteAll(id)
+      _ <- db.run(Series.filter(_.id === id).delete)
+    } yield()
   }
 
   private class SeriesTable(tag: Tag) extends Table[Series](tag, "SERIES") {
