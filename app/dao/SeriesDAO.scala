@@ -32,13 +32,15 @@ class SeriesDAO @Inject() (
     }
   }
 
-  def update(id: Long, seriesData: AddSeriesForm.Data): Future[Int] = {
+  def update(id: Long, seriesData: AddSeriesForm.Data): Future[Unit] = {
     val query = Series.filter(_.id === id)
+    val oldSeries = db.run(query.result.head)
     val update = query
       .map(e => (e.duration, e.startsAt, e.endsAt, e.freq, e.byDay, e.interval, e.eventId))
       .update((seriesData.duration, getStartDateFromInput(seriesData), getEndDateFromInput(seriesData), seriesData.freq, seriesData.byDay.mkString(","), seriesData.interval, seriesData.eventId))
     db.run(update)
-    // TODO: update occurrences
+    val newSeries = db.run(query.result.head)
+    oldSeries.map(so => newSeries.map(sn => occurrenceDAO.updateAll(so, sn)))
   }
 
   private def getEndDateFromInput(seriesData: AddSeriesForm.Data) = {

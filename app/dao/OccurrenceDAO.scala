@@ -24,7 +24,7 @@ class OccurrenceDAO @Inject() (
   def getUpcoming(numDays: Int, offset: Option[Int] = Option.empty): Future[Seq[Occurrence]] = {
     val from = DateTime.now().plusDays(offset.getOrElse(0))
     val to = from.plusDays(numDays)
-    db.run(Occurrences.filter(occurrence => occurrence.date >= from && occurrence.date < to).result)
+    db.run(Occurrences.filter(occurrence => occurrence.date >= from && occurrence.date < to && occurrence.deleted === false).result)
   }
 
   def insert(occurrence: Occurrence): Future[Unit] = {
@@ -40,7 +40,8 @@ class OccurrenceDAO @Inject() (
 
       var startDay = series.startsAt
       while (startDay.getMillis <= series.endsAt.getMillis) {
-        val nextDays = next.map(next => startDay.plusDays(next._2)).filter(day => day.getMillis <= series.endsAt.getMillis && day.getMillis >= series.startsAt.getMillis)
+        val nextDays = next.map(next => startDay.plusDays(next._2))
+          .filter(day => day.getMillis <= series.endsAt.getMillis && day.getMillis >= series.startsAt.getMillis && day.getMillis > DateTime.now.getMillis)
         nextDays.foreach(date => insert(Occurrence(None, series.id.get, date, deleted = false, modified = false)))
         startDay = startDay.plusWeeks(series.interval)
       }
@@ -53,6 +54,26 @@ class OccurrenceDAO @Inject() (
       .map(e => (e.date, e.deleted, e.modified))
       .update((occurrence.date, occurrence.deleted, occurrence.modified))
     db.run(update)
+  }
+
+  def updateAll(oldSeries: Series, newSeries: Series): Unit = {
+    if (oldSeries.freq != newSeries.freq) {
+      // TODO: not supported
+    }
+    if (false /* TODO: update existing occurrences when possible */ && oldSeries.getByDays().toSet.subsetOf(newSeries.getByDays().toSet)) {
+      val sameDays = oldSeries.getByDays().toSet.intersect(newSeries.getByDays().toSet)
+      // TODO: only updated time for sameDays
+      val startTimeChange = newSeries.startsAt.getMillis - oldSeries.startsAt.getMillis
+      // TODO: deleted days (changed start/end day)
+      // TODO: added days (changed start/end day)
+      // TODO: changed days/time
+    } else {
+      // fallback: re-add all occurrences
+      // only modify future unmodified and not deleted occurrences
+      db.run(Occurrences.filter(o => o.seriesId === oldSeries.id && o.date > DateTime.now && o.deleted === false && o.modified === false).delete).map(_ => {
+        insertAll(newSeries)
+      })
+    }
   }
 
   def delete(id: Long): Future[Int] = {
