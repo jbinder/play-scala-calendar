@@ -3,6 +3,7 @@ package dao
 import com.github.tototoshi.slick.H2JodaSupport._
 import javax.inject.Inject
 import models.{Freq, Occurrence, Series}
+import org.apache.commons.lang3.time.DateUtils
 import org.joda.time.DateTime
 import play.api.db.slick.{DatabaseConfigProvider, HasDatabaseConfigProvider}
 import slick.jdbc.JdbcProfile
@@ -57,10 +58,20 @@ class OccurrenceDAO @Inject() (
   }
 
   def updateAll(oldSeries: Series, newSeries: Series): Unit = {
-    if (oldSeries.freq != newSeries.freq) {
+    val freqChanged = oldSeries.freq != newSeries.freq
+    val byDaysChanged = !(oldSeries.getByDays() sameElements newSeries.getByDays())
+    val startDateChanged = !DateUtils.isSameDay(oldSeries.startsAt.toDate, newSeries.startsAt.toDate)
+    val endDateChanged = !DateUtils.isSameDay(oldSeries.endsAt.toDate, newSeries.endsAt.toDate)
+    val timeChanged = oldSeries.startsAt.hourOfDay() != newSeries.startsAt.hourOfDay() ||
+        oldSeries.startsAt.minuteOfHour() != newSeries.startsAt.minuteOfHour()
+    if (freqChanged) {
       // TODO: not supported
     }
-    if (false /* TODO: update existing occurrences when possible */ && oldSeries.getByDays().toSet.subsetOf(newSeries.getByDays().toSet)) {
+    if (!byDaysChanged && !startDateChanged && !endDateChanged && !timeChanged) {
+      // nothing to be done
+      return
+    }
+    if (false) {
       val sameDays = oldSeries.getByDays().toSet.intersect(newSeries.getByDays().toSet)
       // TODO: only updated time for sameDays
       val startTimeChange = newSeries.startsAt.getMillis - oldSeries.startsAt.getMillis
