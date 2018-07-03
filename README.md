@@ -1,9 +1,14 @@
 play-scala-calendar
 ===================
 
-A simple calender using Scala/Play/Slick.
+A simple calender using Scala/Play/Slick for creating and joining events.
 
-Work in progress!
+:warning: Work in progress!
+
+Overview
+--------
+
+Events are assigned to locations and can have multiple series and tags. Series define temporal properties, i.e. date, time, recurrence rules, etc. Each series occurrence is stored individually as well, and will contain booking information in the future.
 
 Requirements
 ------------

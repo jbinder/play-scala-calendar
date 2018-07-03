@@ -1,5 +1,6 @@
 package dao
 
+import scala.async.Async.{async, await}
 import com.github.tototoshi.slick.H2JodaSupport._
 import javax.inject.Inject
 import models.{Freq, Occurrence, Series}
@@ -57,33 +58,47 @@ class OccurrenceDAO @Inject() (
     db.run(update)
   }
 
-  def updateAll(oldSeries: Series, newSeries: Series): Unit = {
-    val freqChanged = oldSeries.freq != newSeries.freq
-    val byDaysChanged = !(oldSeries.getByDays() sameElements newSeries.getByDays())
-    val startDateChanged = !DateUtils.isSameDay(oldSeries.startsAt.toDate, newSeries.startsAt.toDate)
-    val endDateChanged = !DateUtils.isSameDay(oldSeries.endsAt.toDate, newSeries.endsAt.toDate)
-    val timeChanged = oldSeries.startsAt.hourOfDay() != newSeries.startsAt.hourOfDay() ||
+  def updateAll(oldSeries: Series, newSeries: Series): Future[Unit] = {
+    async {
+      val freqChanged = oldSeries.freq != newSeries.freq
+      val byDaysChanged = !(oldSeries.getByDays() sameElements newSeries.getByDays())
+      val startDateChanged = !DateUtils.isSameDay(oldSeries.startsAt.toDate, newSeries.startsAt.toDate)
+      val endDateChanged = !DateUtils.isSameDay(oldSeries.endsAt.toDate, newSeries.endsAt.toDate)
+      val timeChanged = oldSeries.startsAt.hourOfDay() != newSeries.startsAt.hourOfDay() ||
         oldSeries.startsAt.minuteOfHour() != newSeries.startsAt.minuteOfHour()
-    if (freqChanged) {
-      // TODO: not supported
-    }
-    if (!byDaysChanged && !startDateChanged && !endDateChanged && !timeChanged) {
-      // nothing to be done
-      return
-    }
-    if (false) {
-      val sameDays = oldSeries.getByDays().toSet.intersect(newSeries.getByDays().toSet)
-      // TODO: only updated time for sameDays
-      val startTimeChange = newSeries.startsAt.getMillis - oldSeries.startsAt.getMillis
-      // TODO: deleted days (changed start/end day)
-      // TODO: added days (changed start/end day)
-      // TODO: changed days/time
-    } else {
-      // fallback: re-add all occurrences
-      // only modify future unmodified and not deleted occurrences
-      db.run(Occurrences.filter(o => o.seriesId === oldSeries.id && o.date > DateTime.now && o.deleted === false && o.modified === false).delete).map(_ => {
-        insertAll(newSeries)
-      })
+      if (!freqChanged && !byDaysChanged && !startDateChanged && !endDateChanged && !timeChanged) {
+        // nothing to be done
+      }
+      else if (freqChanged || byDaysChanged) {
+        // fallback: re-add all occurrences
+        // only modify future unmodified and not deleted occurrences
+        // TODO: disallow when there are future modified or deleted occurrences
+        db.run(Query.activeOccurrences.filter(o => o.seriesId === oldSeries.id).delete).map(_ => {
+          insertAll(newSeries)
+        })
+      }
+      else {
+        if (timeChanged) {
+          val timeChange = newSeries.startsAt.getMillis - oldSeries.startsAt.getMillis
+          await(db.run(Query.activeOccurrences.result).map(occurrenceList => occurrenceList.map(occurrence => {
+            db.run(Occurrences.filter(_.id === occurrence.id).map(o => o.date).update(occurrence.date.plusMillis(timeChange.toInt)))
+          })))
+        }
+        if (startDateChanged) {
+          if (newSeries.startsAt.getMillis > oldSeries.startsAt.getMillis) {
+            await(db.run(Query.activeOccurrences.filter(o => o.seriesId === oldSeries.id && o.date < newSeries.startsAt).delete))
+          } else if (newSeries.startsAt.getMillis < oldSeries.startsAt.getMillis) {
+            insertAll(newSeries.copy(endsAt = oldSeries.startsAt.plusSeconds(1)))
+          }
+        }
+        if (endDateChanged) {
+          if (newSeries.endsAt.getMillis > oldSeries.endsAt.getMillis) {
+            insertAll(newSeries.copy(startsAt = oldSeries.endsAt.plusHours(oldSeries.startsAt.getHourOfDay).plusMinutes(oldSeries.startsAt.getMinuteOfHour)))
+          } else if (newSeries.endsAt.getMillis < oldSeries.endsAt.getMillis) {
+            await(db.run(Query.activeOccurrences.filter(o => o.seriesId === oldSeries.id && o.date > newSeries.endsAt).delete))
+          }
+        }
+      }
     }
   }
 
@@ -95,12 +110,16 @@ class OccurrenceDAO @Inject() (
     db.run(Occurrences.filter(_.seriesId === seriesId).delete)
   }
 
-  private class OccurrencesTable(tag: Tag) extends Table[Occurrence](tag, "OCCURRENCE") {
+  protected class OccurrencesTable(tag: Tag) extends Table[Occurrence](tag, "OCCURRENCE") {
     def id = column[Option[Long]]("ID", O.PrimaryKey, O.AutoInc)
     def seriesId = column[Long]("SERIES_ID")
     def date = column[DateTime]("DATE")
     def deleted = column[Boolean]("DELETED")
     def modified = column[Boolean]("MODIFIED")
     def * = (id, seriesId, date, deleted, modified) <> (models.Occurrence.tupled, models.Occurrence.unapply)
+  }
+
+  protected object Query {
+    val activeOccurrences = Occurrences.filter(o => o.date > DateTime.now && o.deleted === false && o.modified === false)
   }
 }
